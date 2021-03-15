@@ -16,33 +16,41 @@ package io.opentracing.contrib.jdbc.parser;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.opentracing.contrib.jdbc.ConnectionInfo;
-import java.util.stream.Stream;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
+
+import org.junit.Test;
 
 class SqlServerURLParserTest {
   private static final String SQLSERVER = "sqlserver";
   private final SqlServerURLParser urlParser = new SqlServerURLParser();
 
-  private static Stream<Arguments> connectUrls() {
-    return Stream.of(
-        Arguments.of("jdbc:sqlserver://localhost\\instanceName:1435", "localhost:1435", null),
-        Arguments.of("jdbc:sqlserver://localhost;integratedSecurity=true;", "localhost:1433", null),
-        Arguments
-            .of("jdbc:sqlserver://localhost;databaseName=AdventureWorks;integratedSecurity=true;",
-                "localhost:1433", "AdventureWorks"),
-        Arguments
-            .of("jdbc:sqlserver://localhost:1433;databaseName=AdventureWorks;integratedSecurity=true;",
-                "localhost:1433", "AdventureWorks"),
-        Arguments
-            .of("jdbc:sqlserver://localhost;databaseName=AdventureWorks;integratedSecurity=true;applicationName=MyApp;",
-                "localhost:1433", "AdventureWorks")
-    );
+  @Test
+  void testUrl1() {
+    parseConnectUrls("jdbc:sqlserver://localhost\\instanceName:1435", "localhost:1435", null);
   }
 
-  @ParameterizedTest(name = "[{0}]")
-  @MethodSource("connectUrls")
+  @Test
+  void testUrl2() {
+    parseConnectUrls("jdbc:sqlserver://localhost;integratedSecurity=true;", "localhost:1433", null);
+  }
+
+  @Test
+  void testUrl3() {
+    parseConnectUrls("jdbc:sqlserver://localhost;databaseName=AdventureWorks;integratedSecurity=true;",
+            "localhost:1433", "AdventureWorks");
+  }
+
+  @Test
+  void testUrl4() {
+    parseConnectUrls("jdbc:sqlserver://localhost:1433;databaseName=AdventureWorks;integratedSecurity=true;",
+            "localhost:1433", "AdventureWorks");
+  }
+
+  @Test
+  void testUrl5() {
+    parseConnectUrls("jdbc:sqlserver://localhost;databaseName=AdventureWorks;integratedSecurity=true;applicationName=MyApp;",
+            "localhost:1433", "AdventureWorks");
+  }
+
   void parseConnectUrls(final String url, final String dbPeer, final String dbInstance) {
     final ConnectionInfo result = urlParser.parse(url);
     assertThat(result.getDbType()).isEqualTo(SQLSERVER);

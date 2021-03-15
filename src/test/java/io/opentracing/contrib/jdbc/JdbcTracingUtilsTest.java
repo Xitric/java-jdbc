@@ -83,13 +83,18 @@ public class JdbcTracingUtilsTest {
     JdbcTracing.setSlowQueryThresholdMs(slowQueryThresholdMs);
 
     JdbcTracingUtils.execute(
-        "SlowQuery",
-        () -> Thread.sleep(slowQueryThresholdMs * 2),
-        null,
-        ConnectionInfo.UNKNOWN_CONNECTION_INFO,
-        false,
-        Collections.emptySet(),
-        mockTracer);
+            "SlowQuery",
+            new JdbcTracingUtils.CheckedRunnable<Exception>() {
+              @Override
+              public void run() throws Exception {
+                Thread.sleep(slowQueryThresholdMs * 2);
+              }
+            },
+            null,
+            ConnectionInfo.UNKNOWN_CONNECTION_INFO,
+            false,
+            Collections.<String>emptySet(),
+            mockTracer);
 
     final List<MockSpan> finishedSpans = mockTracer.finishedSpans();
     assertEquals("Should have traced a query execution", 1, finishedSpans.size());
@@ -104,13 +109,18 @@ public class JdbcTracingUtilsTest {
     JdbcTracing.setExcludeFastQueryThresholdMs(excludeFastQueryThresholdMs);
 
     JdbcTracingUtils.execute(
-        "FastQuery",
-        () -> Thread.sleep(excludeFastQueryThresholdMs / 2),
-        null,
-        ConnectionInfo.UNKNOWN_CONNECTION_INFO,
-        false,
-        Collections.emptySet(),
-        mockTracer);
+            "FastQuery",
+            new JdbcTracingUtils.CheckedRunnable<Exception>() {
+              @Override
+              public void run() throws Exception {
+                Thread.sleep(excludeFastQueryThresholdMs / 2);
+              }
+            },
+            null,
+            ConnectionInfo.UNKNOWN_CONNECTION_INFO,
+            false,
+            Collections.<String>emptySet(),
+            mockTracer);
 
     final List<MockSpan> finishedSpans = mockTracer.finishedSpans();
     assertEquals("Should have traced a query execution", 1, finishedSpans.size());

@@ -140,7 +140,7 @@ public class TracingDriver implements Driver {
   protected Tracer tracer;
 
   @Override
-  public Connection connect(String url, Properties info) throws SQLException {
+  public Connection connect(String url, final Properties info) throws SQLException {
     // if there is no url, we have problems
     if (url == null) {
       throw new SQLException("url is required");
@@ -166,9 +166,13 @@ public class TracingDriver implements Driver {
     final Tracer currentTracer = getTracer();
     final ConnectionInfo connectionInfo = URLParser.parse(url);
     final String realUrl = url;
-    final Connection connection = JdbcTracingUtils.call("AcquireConnection", () ->
-            wrappedDriver.connect(realUrl, info), null, connectionInfo, withActiveSpanOnly,
-        null, currentTracer);
+    final Connection connection = JdbcTracingUtils.call("AcquireConnection", new JdbcTracingUtils.CheckedCallable<Connection, SQLException>() {
+              @Override
+              public Connection call() throws SQLException {
+                return wrappedDriver.connect(realUrl, info);
+              }
+            }, null, connectionInfo, withActiveSpanOnly,
+            null, currentTracer);
 
     return WrapperProxy
         .wrap(connection, new TracingConnection(connection, connectionInfo, withActiveSpanOnly,

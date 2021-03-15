@@ -52,20 +52,35 @@ public class TracingPreparedStatement extends TracingStatement implements Prepar
 
   @Override
   public ResultSet executeQuery() throws SQLException {
-    return JdbcTracingUtils.call("Query", preparedStatement::executeQuery,
-        query, connectionInfo, withActiveSpanOnly, ignoreStatements, tracer);
+    return JdbcTracingUtils.call("Query", new JdbcTracingUtils.CheckedCallable<ResultSet, SQLException>() {
+              @Override
+              public ResultSet call() throws SQLException {
+                return preparedStatement.executeQuery();
+              }
+            },
+            query, connectionInfo, withActiveSpanOnly, ignoreStatements, tracer);
   }
 
   @Override
   public int executeUpdate() throws SQLException {
-    return JdbcTracingUtils.call("Update", preparedStatement::executeUpdate,
-        query, connectionInfo, withActiveSpanOnly, ignoreStatements, tracer);
+    return JdbcTracingUtils.call("Update", new JdbcTracingUtils.CheckedCallable<Integer, SQLException>() {
+              @Override
+              public Integer call() throws SQLException {
+                return preparedStatement.executeUpdate();
+              }
+            },
+            query, connectionInfo, withActiveSpanOnly, ignoreStatements, tracer);
   }
 
   @Override
   public boolean execute() throws SQLException {
-    return JdbcTracingUtils.call("Execute", preparedStatement::execute,
-        query, connectionInfo, withActiveSpanOnly, ignoreStatements, tracer);
+    return JdbcTracingUtils.call("Execute", new JdbcTracingUtils.CheckedCallable<Boolean, SQLException>() {
+              @Override
+              public Boolean call() throws SQLException {
+                return preparedStatement.execute();
+              }
+            },
+            query, connectionInfo, withActiveSpanOnly, ignoreStatements, tracer);
   }
 
   @Override

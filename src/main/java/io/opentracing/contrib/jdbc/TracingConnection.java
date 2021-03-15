@@ -150,20 +150,35 @@ public class TracingConnection implements Connection {
 
   @Override
   public void commit() throws SQLException {
-    JdbcTracingUtils.execute("Commit", connection::commit, null,
-        connectionInfo, withActiveSpanOnly, null, tracer);
+    JdbcTracingUtils.execute("Commit", new JdbcTracingUtils.CheckedRunnable<SQLException>() {
+              @Override
+              public void run() throws SQLException {
+                connection.commit();
+              }
+            }, null,
+            connectionInfo, withActiveSpanOnly, null, tracer);
   }
 
   @Override
   public void rollback() throws SQLException {
-    JdbcTracingUtils.execute("Rollback", connection::rollback, null,
-        connectionInfo, withActiveSpanOnly, null, tracer);
+    JdbcTracingUtils.execute("Rollback", new JdbcTracingUtils.CheckedRunnable<SQLException>() {
+              @Override
+              public void run() throws SQLException {
+                connection.rollback();
+              }
+            }, null,
+            connectionInfo, withActiveSpanOnly, null, tracer);
   }
 
   @Override
   public void close() throws SQLException {
-    JdbcTracingUtils.execute("Close", connection::close, null,
-        connectionInfo, withActiveSpanOnly, null, tracer);
+    JdbcTracingUtils.execute("Close", new JdbcTracingUtils.CheckedRunnable<SQLException>() {
+              @Override
+              public void run() throws SQLException {
+                connection.close();
+              }
+            }, null,
+            connectionInfo, withActiveSpanOnly, null, tracer);
   }
 
   @Override
